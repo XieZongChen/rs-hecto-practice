@@ -90,6 +90,15 @@ impl Document {
         self.dirty
     }
 
+    pub fn find(&self, query: &str) -> Option<Position> {
+        for (y, row) in self.rows.iter().enumerate() {
+            if let Some(x) = row.find(query) {
+                return Some(Position { x, y});
+            }
+        }
+        None
+    }
+
     fn insert_newline(&mut self, at: &Position) {
         if at.y > self.rows.len() {
             return;
