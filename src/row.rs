@@ -183,6 +183,7 @@ impl Row {
         if let Some(word) = word {
             while let Some(search_match) = self.find(word, search_index, SearchDirection::Forward) {
                 matches.push(search_match);
+                // 这里使用 checked_add 而不是 saturating_add 是为了防止计算溢出时进入死循环，这种情况下 checked_add 会返回 None
                 if let Some(next_index) = search_match.checked_add(word[..].graphemes(true).count())
                 {
                     search_index = next_index;
@@ -192,6 +193,7 @@ impl Row {
             }
         }
 
+        let mut prev_is_separator = true;
         let mut index = 0;
         while let Some(c) = chars.get(index) {
             if let Some(word) = word {
@@ -204,11 +206,24 @@ impl Row {
                 }
             }
 
-            if c.is_ascii_digit() {
+            let previous_highlight = if index > 0 {
+                #[allow(clippy::integer_arithmetic)]
+                highlighting
+                    .get(index - 1)
+                    .unwrap_or(&highlighting::Type::None)
+            } else {
+                &highlighting::Type::None
+            };
+
+            if (c.is_ascii_digit()
+                && (prev_is_separator || previous_highlight == &highlighting::Type::Number))
+                || (c == &'.' && previous_highlight == &highlighting::Type::Number)
+            {
                 highlighting.push(highlighting::Type::Number);
             } else {
                 highlighting.push(highlighting::Type::None);
             }
+            prev_is_separator = c.is_ascii_punctuation() || c.is_ascii_whitespace();
             index += 1;
         }
 
