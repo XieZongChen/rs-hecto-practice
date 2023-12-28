@@ -228,7 +228,7 @@ impl Row {
                     if let Some(closing_char) = chars.get(closing_index) {
                         if *closing_char == '\'' {
                             for _ in 0..=closing_index.saturating_sub(index) {
-                                highlighting.push(highlighting::Type::Characters);
+                                highlighting.push(highlighting::Type::Character);
                                 index += 1;
                             }
                             continue;
@@ -263,6 +263,17 @@ impl Row {
                     index += 1;
                     continue;
                 }
+            }
+
+            if opts.comments() && *c == '/' {
+                if let Some(next_char) = chars.get(index.saturating_add(1)) {
+                    if *next_char == '/' {
+                        for _ in index..chars.len() {
+                            highlighting.push(highlighting::Type::Comment);
+                        }
+                        break;
+                    }
+                };
             }
 
             if opts.numbers() {
