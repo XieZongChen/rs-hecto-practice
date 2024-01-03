@@ -1,4 +1,4 @@
-use crate::{FileType, Position, Row, SearchDirection, row};
+use crate::{FileType, Position, Row, SearchDirection};
 use std::{
     fs::{self},
     io::{Error, Write},
